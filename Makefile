@@ -7,8 +7,7 @@ INC = -I./libs -I/opt/cuda/include -I/usr/lib/glut-3.7/include
 LIBS = -lstdc++
 
 OBJS = \
-body.o \
-array.o 
+body.o
 
 .cpp.o:
 	 $(CC) -c $(INC) $(COPTS) -o $@ $<

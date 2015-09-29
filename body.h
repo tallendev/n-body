@@ -1,9 +1,9 @@
 #ifndef BODY_H
 #define BODY_H
 
+#include <array>
 #include <cstddef>
 
-#include "array.h"
 
 class Body
 {
@@ -15,23 +15,24 @@ class Body
 
         Body();
         Body(double mass, double radius);
-        void set_mass();
-        void set_radius();
-        void get_pos();
-        void get_accel();
-        void set_pos();
-        void set_vel();
-        void set_accel();
-        void update_pos();
-        void update_vel();
-        void update_accel();
+        void set_mass(double mass);
+        void set_radius(double radius);
+        double get_pos(size_t idx);
+        double get_vel(size_t idx);
+        double get_acc(size_t idx);
+        void set_pos(size_t idx, double val);
+        void set_vel(size_t idx, double val);
+        void set_acc(size_t idx, double val);
+        void update_pos(size_t idx, double delta);
+        void update_vel(size_t idx, double delta);
+        void update_acc(size_t idx, double delta);
 
     private:
         double mass;
         double radius;
-        Array<double> acceleration(DIMS);
-        Array<double> velocity(DIMS);
-        Array<double> position(DIMS);
+        std::array<double, DIMS> acc;
+        std::array<double, DIMS> vel;
+        std::array<double, DIMS> pos;
 };
 
 
