@@ -4,8 +4,11 @@
 #include <cuda_gl_interop.h>
 #include <device_launch_parameters.h>
 
+#include <iostream>
+
 #include "body.h"
 #include "motion.h"
+#include "utils.h"
 
 // gravitational constant
 const double G = 6.674E-11;
@@ -16,8 +19,11 @@ void run_calculations(int N, Body* g_bodies, double timestep)
 {
     int blocks = N / BLOCK_THREADS;   
     calculate_force<<<blocks, BLOCK_THREADS>>>(N, g_bodies, timestep);
+    gpuErrchk(cudaPeekAtLastError());
+    gpuErrchk(cudaDeviceSynchronize());
     update_pos<<<blocks, BLOCK_THREADS>>>(N, g_bodies);
-    cudaDeviceSynchronize();
+    gpuErrchk(cudaPeekAtLastError());
+    gpuErrchk(cudaDeviceSynchronize());
 }
 
 extern "C" __global__

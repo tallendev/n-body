@@ -1,6 +1,0 @@
-I like the proposed project of implementing and optimizing n-body simulation on CUDA. 
-I wonder which three NVIDA cards will be used in your n-body code optimization. Do you have access to those cards? 
-Performance optimization could be complex. I recommend you start with a reference about general CUDA performance optimization titled
-  "Optimization Principles and Application Performance Evaluation of a Multithreaded GPU Using CUDA" by Ryoo et al. 
-and a reference with more specifics about 
-N-body http://cs.txstate.edu/~burtscher/tutorials/COT5/slides.pptx. The author is my collaborator and has optimized version of N-body simulation.

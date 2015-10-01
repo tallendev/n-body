@@ -21,6 +21,7 @@
 
 #include "body.h"
 #include "motion.h"
+#include "utils.h"
 
 int main();//(int argc, char* argv[]);
 void simulate();
@@ -85,10 +86,10 @@ void simulate()
     while (!glfwWindowShouldClose(window))
     {
         //std::cerr << sizeof(bodies) << std::endl;
-        cudaMalloc((void**)&g_bodies, sizeof(bodies));
-        cudaMemcpy(g_bodies, bodies, sizeof(bodies), cudaMemcpyHostToDevice);
-        run_calculations(N, g_bodies, TS);
-        cudaMemcpy(bodies, g_bodies, sizeof(bodies), cudaMemcpyDeviceToHost);
+        gpuErrchk(cudaMalloc((void**)&g_bodies, sizeof(bodies)));
+        gpuErrchk(cudaMemcpy(g_bodies, bodies, sizeof(bodies), cudaMemcpyHostToDevice));
+        (run_calculations(N, g_bodies, TS));
+        gpuErrchk(cudaMemcpy(bodies, g_bodies, sizeof(bodies), cudaMemcpyDeviceToHost));
         if (draw_timer > sample_rate)
         {
             draw_timer = 0;   
@@ -175,3 +176,4 @@ void dump_bodies()
         std::cerr << "Body " << i << ": " << bodies[i].to_string() << std::endl;
     }
 }
+
