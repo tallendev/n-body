@@ -4,7 +4,7 @@
 #include <string>
 #include <iostream>
 
-Body::Body() : Body::Body(5, .75) {}
+Body::Body() : Body::Body(.01, .75) {}
 
 Body::Body(double mass, double radius)
 {

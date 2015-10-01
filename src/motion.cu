@@ -11,13 +11,14 @@
 #include "utils.h"
 
 // gravitational constant
-const double G = 6.674E-11;
+const double G = 1;//6.674E-11;
 
-const int BLOCK_THREADS = 2048;
+const int BLOCK_THREADS = 1024; //2048;
 
 void run_calculations(int N, Body* g_bodies, double timestep)
 {
-    int blocks = N / BLOCK_THREADS;   
+    int blocks = N / BLOCK_THREADS;
+    blocks = blocks == 0 ? 1 : blocks;   
     calculate_force<<<blocks, BLOCK_THREADS>>>(N, g_bodies, timestep);
     gpuErrchk(cudaPeekAtLastError());
     gpuErrchk(cudaDeviceSynchronize());
@@ -49,8 +50,8 @@ void calculate_force(int nbodies, Body* g_bodies, double timestep)
                 //omit mass of current body, must divide by it later to get accel anyway
                 mass = timestep * G * g_bodies[j].get_mass();
                 g_bodies[i].update_acc(0, mass * dx / dist);
-                g_bodies[i].update_acc(1, mass * dx / dist);
-                g_bodies[i].update_acc(2, mass * dx / dist);
+                g_bodies[i].update_acc(1, mass * dy / dist);
+                g_bodies[i].update_acc(2, mass * dz / dist);
             }
         }
     }
@@ -63,7 +64,7 @@ void update_pos(int nbodies, Body* g_bodies)
     g_bodies[i].update_vel(0, g_bodies[i].get_acc(0));
     g_bodies[i].update_vel(1, g_bodies[i].get_acc(1));
     g_bodies[i].update_vel(2, g_bodies[i].get_acc(2));
-    g_bodies[i].update_acc(0, g_bodies[i].get_vel(0));
-    g_bodies[i].update_acc(1, g_bodies[i].get_vel(1));
-    g_bodies[i].update_acc(2, g_bodies[i].get_vel(2));
+    g_bodies[i].update_pos(0, g_bodies[i].get_vel(0));
+    g_bodies[i].update_pos(1, g_bodies[i].get_vel(1));
+    g_bodies[i].update_pos(2, g_bodies[i].get_vel(2));
 }

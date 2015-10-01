@@ -30,7 +30,7 @@ void initialize_gl();
 void display();
 void dump_bodies();
 
-const int N = 1000;
+const int N = 100;
 
 const int SCREEN_W = 1920;
 const int SCREEN_H = 1080;
@@ -53,6 +53,10 @@ int main()//(int argc, char* argv[])
     // for now set bodies as random...
     for (size_t i = 0; i < N; i++)
     {
+        if (i == 0)
+        {
+            bodies[i].set_mass(.1);
+        }
         for (size_t j = 0; j < Body::DIMS; j++)
         {
             if (j == 0)
@@ -62,8 +66,8 @@ int main()//(int argc, char* argv[])
             else
                 bodies[i].set_pos(j, z); 
         }
-        x = rand() % SCREEN_W;
-        y = rand() % SCREEN_H;   
+        x = rand() % (SCREEN_W / 2);
+        y = rand() % (SCREEN_H / 2);   
     }
     
     dump_bodies();
@@ -83,12 +87,12 @@ void simulate()
 {
     double draw_timer = 0;
     Body* g_bodies;
+    gpuErrchk(cudaMalloc((void**)&g_bodies, sizeof(bodies)));
     while (!glfwWindowShouldClose(window))
     {
         //std::cerr << sizeof(bodies) << std::endl;
-        gpuErrchk(cudaMalloc((void**)&g_bodies, sizeof(bodies)));
         gpuErrchk(cudaMemcpy(g_bodies, bodies, sizeof(bodies), cudaMemcpyHostToDevice));
-        (run_calculations(N, g_bodies, TS));
+        run_calculations(N, g_bodies, TS);
         gpuErrchk(cudaMemcpy(bodies, g_bodies, sizeof(bodies), cudaMemcpyDeviceToHost));
         if (draw_timer > sample_rate)
         {

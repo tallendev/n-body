@@ -13,7 +13,7 @@ body.o \
 motion.o
 
 .cpp.o:
-	 $(CC) -c $(INC) $(COPTS) -o $@ $<
+	 g++ -c $(INC) $(COPTS) -o $@ $<
 
 .cu.o:
 	 $(CC) -c $(INC) $(COPTS) -o $@ $< -dc
