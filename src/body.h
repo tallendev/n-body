@@ -1,10 +1,10 @@
 #ifndef BODY_H
 #define BODY_H
 
+#include <GL/glew.h>
+
 #include <array>
 #include <cstddef>
-
-#include<GL/glew.h> 
 
 class Body
 {
@@ -18,6 +18,8 @@ class Body
         Body(double mass, double radius);
         void set_mass(double mass);
         void set_radius(double radius);
+        double get_mass();
+        double get_radius();
         double get_pos(size_t idx);
         double get_vel(size_t idx);
         double get_acc(size_t idx);

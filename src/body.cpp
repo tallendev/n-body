@@ -1,9 +1,10 @@
 #include "body.h"
+
 #include <sstream>
 #include <string>
 #include <iostream>
 
-Body::Body() : Body::Body(5, 5) {}
+Body::Body() : Body::Body(5, .75) {}
 
 Body::Body(double mass, double radius)
 {
@@ -35,6 +36,16 @@ void Body::set_mass(double mass)
 void Body::set_radius(double radius)
 {
     this->radius = radius;
+}
+
+double Body::get_mass()
+{
+    return mass;
+}
+
+double Body::get_radius()
+{
+    return radius;
 }
 
 double Body::get_pos(size_t idx)
