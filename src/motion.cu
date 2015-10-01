@@ -1,46 +1,27 @@
-#include <iostream>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <math.h>
-#include <time.h>
-
 #include <GL/glew.h>
 
 #include <cuda_runtime.h>
 #include <cuda_gl_interop.h>
-#include <vector_types.h>
-#include <vector_functions.h>
 #include <device_launch_parameters.h>
-
-#include <helper_cuda.h>    // includes cuda.h and cuda_runtime_api.h
-#include <helper_functions.h>
-#include <helper_cuda_gl.h>
 
 #include "body.h"
 #include "motion.h"
 
-void simulate(int N, Body* g_bodies);
-extern "C" __global__ void calculate_force(int, Body*);
-extern "C" __global__ void update_pos(int, Body*);
-
 // gravitational constant
 const double G = 6.674E-11;
 
-//seconds, for now.
-const double timestep = .0001;
-
 const int BLOCK_THREADS = 2048;
 
-void simulate(int N, Body* g_bodies)
+void run_calculations(int N, Body* g_bodies, double timestep)
 {
     int blocks = N / BLOCK_THREADS;   
-    calculate_force<<<blocks, BLOCK_THREADS>>>(N, g_bodies);
+    calculate_force<<<blocks, BLOCK_THREADS>>>(N, g_bodies, timestep);
     update_pos<<<blocks, BLOCK_THREADS>>>(N, g_bodies);
+    cudaDeviceSynchronize();
 }
 
 extern "C" __global__
-void calculate_force(int nbodies, Body* g_bodies)
+void calculate_force(int nbodies, Body* g_bodies, double timestep)
 {
     double dx;
     double dy;

@@ -1,4 +1,4 @@
-CC = g++
+CC = nvcc
 
 .SUFFIXES: .cpp .c .h .o .cu
 
@@ -16,12 +16,12 @@ motion.o
 	 $(CC) -c $(INC) $(COPTS) -o $@ $<
 
 .cu.o:
-	 nvcc -c $(INC) $(COPTS) -o $@ $<
+	 $(CC) -c $(INC) $(COPTS) -o $@ $< -dc
 
 all: autorun
 
 autorun: $(OBJS) autorun.o
-	nvcc -o $@ $(INC) $(COPTS) $(OBJS) autorun.o $(LIBDIR) $(LIBS)
+	$(CC) -o $@ $(INC) $(COPTS) $(OBJS) autorun.o $(LIBDIR) $(LIBS)
 
 clean:
 	-rm -f *.o

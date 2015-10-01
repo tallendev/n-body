@@ -16,20 +16,20 @@ class Body
 
         Body();
         Body(double mass, double radius);
-        void set_mass(double mass);
-        void set_radius(double radius);
-        double get_mass();
-        double get_radius();
-        double get_pos(size_t idx);
-        double get_vel(size_t idx);
-        double get_acc(size_t idx);
-        void set_pos(size_t idx, double val);
-        void set_vel(size_t idx, double val);
-        void set_acc(size_t idx, double val);
-        void set_color(size_t idx, double val);
-        void update_pos(size_t idx, double delta);
-        void update_vel(size_t idx, double delta);
-        void update_acc(size_t idx, double delta);
+        __device__ __host__ void set_mass(double mass);
+        __device__ __host__ void set_radius(double radius);
+        __device__ __host__ double get_mass();
+        __device__ __host__ double get_radius();
+        __device__ __host__ double get_pos(size_t idx);
+        __device__ __host__ double get_vel(size_t idx);
+        __device__ __host__ double get_acc(size_t idx);
+        __device__ __host__ void set_pos(size_t idx, double val);
+        __device__ __host__ void set_vel(size_t idx, double val);
+        __device__ __host__ void set_acc(size_t idx, double val);
+        __device__ __host__ void set_color(size_t idx, double val);
+        __device__ __host__ void update_pos(size_t idx, double delta);
+        __device__ __host__ void update_vel(size_t idx, double delta);
+        __device__ __host__ void update_acc(size_t idx, double delta);
         void render();
         std::string to_string();
 
@@ -39,10 +39,10 @@ class Body
 
         double mass;
         double radius;
-        std::array<double, DIMS> acc;
-        std::array<double, DIMS> vel;
-        std::array<double, DIMS> pos;
-        std::array<double, 3> color;
+        double acc[DIMS];
+        double vel[DIMS];
+        double pos[DIMS];
+        double color[DIMS];
         GLUquadricObj* body;
 };
 

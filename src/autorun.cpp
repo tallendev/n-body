@@ -7,10 +7,7 @@
 #include <math.h>
 #include <time.h>
 
-
 #include <GLFW/glfw3.h>
-//#include <GL/glut.h>
-//#include "freeglut.h"
 
 #include <cuda_runtime.h>
 #include <cuda_gl_interop.h>
@@ -36,6 +33,9 @@ const int N = 1000;
 
 const int SCREEN_W = 1920;
 const int SCREEN_H = 1080;
+
+//seconds, for now.
+const double TS = .0001;
 
 static Body bodies[N];
 static GLFWwindow* window;
@@ -81,21 +81,22 @@ int main()//(int argc, char* argv[])
 void simulate()
 {
     double draw_timer = 0;
-    double current_time = 0;
     Body* g_bodies;
     while (!glfwWindowShouldClose(window))
     {
+        //std::cerr << sizeof(bodies) << std::endl;
         cudaMalloc((void**)&g_bodies, sizeof(bodies));
         cudaMemcpy(g_bodies, bodies, sizeof(bodies), cudaMemcpyHostToDevice);
-
-        run_calculations(N, g_bodies);
+        run_calculations(N, g_bodies, TS);
+        cudaMemcpy(bodies, g_bodies, sizeof(bodies), cudaMemcpyDeviceToHost);
         if (draw_timer > sample_rate)
         {
-            draw_timer = 0;
+            draw_timer = 0;   
             display();
+            std::cerr << "display()" << std::endl;   
+            //dump_bodies();
         }
-        cudaMemcpy(bodies, sizeof(bodies), cudaMemcpyDeviceTohost);
-        current_time += timestep;
+        draw_timer += TS;
     }
     cudaFree(g_bodies);
 }
@@ -165,6 +166,7 @@ void display()
     glfwSwapBuffers(window);
     glFlush();
 }
+
 
 void dump_bodies()
 {
