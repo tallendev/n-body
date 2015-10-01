@@ -26,25 +26,25 @@ Body::Body(double mass, double radius)
     }
 }
 
-__device__ __host__
+extern "C" __device__ __host__
 void Body::set_mass(double mass)
 {
     this->mass = mass;
 }
 
-__device__ __host__
+extern "C" __device__ __host__
 void Body::set_radius(double radius)
 {
     this->radius = radius;
 }
 
-__device__ __host__
+extern "C" __device__ __host__
 double Body::get_mass()
 {
     return mass;
 }
 
-__device__ __host__
+extern "C" __device__ __host__
 double Body::get_radius()
 {
     return radius;
@@ -56,55 +56,55 @@ double Body::get_pos(size_t idx)
     return pos[idx];
 }
 
-__device__ __host__
+extern "C" __device__ __host__
 double Body::get_vel(size_t idx)
 {
     return vel[idx];
 }
 
-__device__ __host__
+extern "C" __device__ __host__
 double Body::get_acc(size_t idx)
 {
     return acc[idx];
 }
 
-__device__ __host__
+extern "C" __device__ __host__
 void Body::set_pos(size_t idx, double val)
 {
     pos[idx] = val;
 }
 
-__device__ __host__
+extern "C" __device__ __host__
 void Body::set_vel(size_t idx, double val)
 {
     vel[idx] = val;
 }
 
-__device__ __host__
+extern "C" __device__ __host__
 void Body::set_acc(size_t idx, double val)
 {
     acc[idx] = val;
 }
 
-__device__ __host__
+extern "C" __device__ __host__
 void Body::set_color(size_t idx, double val)
 {
     color[idx] = val;
 }
 
-__device__ __host__
+extern "C" __device__ __host__
 void Body::update_pos(size_t idx, double delta)
 {
     pos[idx] += delta;
 }
 
-__device__ __host__
+extern "C" __device__ __host__
 void Body::update_vel(size_t idx, double delta)
 {
     vel[idx] += delta;
 }
 
-__device__ __host__
+extern "C" __device__ __host__
 void Body::update_acc(size_t idx, double delta)
 {
     acc[idx] += delta;
