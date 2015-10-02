@@ -10,10 +10,11 @@ LIBS = -lstdc++ -lglfw -lGLU -lGL -lGLEW -lm
 
 OBJS = \
 body.o \
-motion.o
+motion.o \
+utils.o
 
 .cpp.o:
-	 g++ -c $(INC) $(COPTS) -o $@ $<
+	 $(CC) -c $(INC) $(COPTS) -o $@ $<
 
 .cu.o:
 	 $(CC) -c $(INC) $(COPTS) -o $@ $< -dc

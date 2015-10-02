@@ -1,4 +1,5 @@
 #include <GL/glew.h>
+#include <GL/glext.h>
 
 #include <iostream>
 #include <stdlib.h>
@@ -8,6 +9,7 @@
 #include <time.h>
 
 #include <GLFW/glfw3.h>
+#include <GL/gl.h>
 
 #include <cuda_runtime.h>
 #include <cuda_gl_interop.h>
@@ -28,9 +30,10 @@ void simulate();
 void glfw_init();
 void initialize_gl();
 void display();
+void render_setup();
 void dump_bodies();
 
-const int N = 100;
+const int N = 2;//100;
 
 const int SCREEN_W = 1920;
 const int SCREEN_H = 1080;
@@ -40,6 +43,16 @@ const double TS = .0001;
 
 static Body bodies[N];
 static GLFWwindow* window;
+static GLuint vbo;
+
+GLchar *vertex_source;
+GLchar *fragment_source;
+GLuint vertexshader;
+GLuint fragmentshader;
+GLuint shaderprogram;
+
+static double pos[N * 3];
+static double colors[N * 3];
 
 static double sample_rate = .016;
 
@@ -66,8 +79,10 @@ int main()//(int argc, char* argv[])
             else
                 bodies[i].set_pos(j, z); 
         }
-        x = rand() % (SCREEN_W / 2);
-        y = rand() % (SCREEN_H / 2);   
+        //x = rand() % SCREEN_W;
+        //y = rand() % SCREEN_H;
+        x = ((double) rand()) / RAND_MAX;
+        y = ((double) rand()) / RAND_MAX;
     }
     
     dump_bodies();
@@ -75,8 +90,10 @@ int main()//(int argc, char* argv[])
     glfw_init();
     initialize_gl();
     glewInit();
+    render_setup();
 
-    simulate();
+    //simulate();
+    while(true) display();
     glfwDestroyWindow(window);
     glfwTerminate();
     return 0;
@@ -88,22 +105,44 @@ void simulate()
     double draw_timer = 0;
     Body* g_bodies;
     gpuErrchk(cudaMalloc((void**)&g_bodies, sizeof(bodies)));
+    gpuErrchk(cudaMemcpy(g_bodies, bodies, sizeof(bodies), cudaMemcpyHostToDevice));
     while (!glfwWindowShouldClose(window))
     {
         //std::cerr << sizeof(bodies) << std::endl;
-        gpuErrchk(cudaMemcpy(g_bodies, bodies, sizeof(bodies), cudaMemcpyHostToDevice));
         run_calculations(N, g_bodies, TS);
-        gpuErrchk(cudaMemcpy(bodies, g_bodies, sizeof(bodies), cudaMemcpyDeviceToHost));
         if (draw_timer > sample_rate)
         {
+            gpuErrchk(cudaMemcpy(bodies, g_bodies, sizeof(bodies), cudaMemcpyDeviceToHost));
             draw_timer = 0;   
             display();
             std::cerr << "display()" << std::endl;   
-            //dump_bodies();
+            dump_bodies();
         }
         draw_timer += TS;
     }
     cudaFree(g_bodies);
+}
+
+void render_setup()
+{
+    glGenBuffers(1, &vbo);
+
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+
+    glBufferData(GL_ARRAY_BUFFER, sizeof(pos) + sizeof(colors), NULL, GL_STATIC_DRAW);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(pos), pos);
+    glBufferSubData(GL_ARRAY_BUFFER, sizeof(pos), sizeof(colors), colors);
+    
+    shaderprogram = InitShader("shader.vert", "shader.frag");
+    glUseProgram(shaderprogram);
+
+    GLuint vPosition = glGetAttribLocation(shaderprogram, "vPosition");
+    glEnableVertexAttribArray(vPosition);
+    glVertexAttribPointer(vPosition, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
+
+    GLuint vColor = glGetAttribLocation(shaderprogram, "vColor");
+    glEnableVertexAttribArray(vColor);
+    glVertexAttribPointer(vColor, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(sizeof(pos)));
 }
 
 void  glfw_init()
@@ -139,14 +178,7 @@ void initialize_gl()
     glClearColor( 0.0, 0.0, 0.0, 0.0 );
     glClearDepth(1.0f);
     glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LEQUAL);
-    glShadeModel(GL_SMOOTH);
-    glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
-
-
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glEnable(GL_BLEND);
-    
+    glEnable(GL_POINT_SMOOTH);
     glViewport(0, 0, SCREEN_W, SCREEN_H);
 
     glMatrixMode(GL_PROJECTION);
@@ -156,18 +188,30 @@ void initialize_gl()
 
 void display()
 {
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-
-    glDrawBuffer(GL_BACK);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     for (int i = 0; i < N; i++)
     {
+        int idx = i * 3;
+        pos[idx] = bodies[i].get_pos(0);
+        pos[idx + 1] = bodies[i].get_pos(1);
+        pos[idx + 2] = bodies[i].get_pos(2);
+        colors[idx] = bodies[i].get_color(0);
+        colors[idx + 1] = bodies[i].get_color(1);
+        colors[idx + 2] = bodies[i].get_color(2);
+        /*
         glPushMatrix();
         bodies[i].render();
         glPopMatrix();
+        */
     }
+
+    glBufferSubData(GL_ARRAY_BUFFER, 0, 3 * sizeof(GLfloat), pos);
+    glBufferSubData(GL_ARRAY_BUFFER, 3*sizeof(GLfloat), 3 * sizeof(GLfloat), colors);
+
+    glPointSize(10);
+    glDrawArrays(GL_POINTS, 0, N);
+    //glDrawArrays(GL_TRIANGLES, 0, N);
     glfwSwapBuffers(window);
     glFlush();
 }
@@ -180,4 +224,3 @@ void dump_bodies()
         std::cerr << "Body " << i << ": " << bodies[i].to_string() << std::endl;
     }
 }
-

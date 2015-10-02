@@ -20,6 +20,7 @@ class Body
         __device__ __host__ void set_radius(double radius);
         __device__ __host__ double get_mass();
         __device__ __host__ double get_radius();
+        __device__ __host__ double get_color(size_t idx);
         __device__ __host__ double get_pos(size_t idx);
         __device__ __host__ double get_vel(size_t idx);
         __device__ __host__ double get_acc(size_t idx);
@@ -30,13 +31,10 @@ class Body
         __device__ __host__ void update_pos(size_t idx, double delta);
         __device__ __host__ void update_vel(size_t idx, double delta);
         __device__ __host__ void update_acc(size_t idx, double delta);
-        void render();
+        //void render();
         std::string to_string();
 
     private:
-        const int slices = 16;
-        const int stacks = 16;
-
         double mass;
         double radius;
         double acc[DIMS];
