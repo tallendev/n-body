@@ -51,8 +51,8 @@ GLuint vertexshader;
 GLuint fragmentshader;
 GLuint shaderprogram;
 
-static double pos[N * 3];
-static double colors[N * 3];
+static double pos[N * 4];
+static double colors[N * 4];
 
 static double sample_rate = .016;
 
@@ -192,13 +192,15 @@ void display()
 
     for (int i = 0; i < N; i++)
     {
-        int idx = i * 3;
+        int idx = i * 4;
         pos[idx] = bodies[i].get_pos(0);
         pos[idx + 1] = bodies[i].get_pos(1);
         pos[idx + 2] = bodies[i].get_pos(2);
+        pos[idx + 3] = 1.0;
         colors[idx] = bodies[i].get_color(0);
         colors[idx + 1] = bodies[i].get_color(1);
         colors[idx + 2] = bodies[i].get_color(2);
+        colors[idx + 3] = 1.0;
         /*
         glPushMatrix();
         bodies[i].render();
