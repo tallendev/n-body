@@ -79,10 +79,10 @@ int main()//(int argc, char* argv[])
             else
                 bodies[i].set_pos(j, z); 
         }
-        //x = rand() % SCREEN_W;
-        //y = rand() % SCREEN_H;
-        x = ((double) rand()) / RAND_MAX;
-        y = ((double) rand()) / RAND_MAX;
+        x = rand() % SCREEN_W;
+        y = rand() % SCREEN_H;
+        //x = ((double) rand()) / RAND_MAX;
+        //y = ((double) rand()) / RAND_MAX;
     }
     
     dump_bodies();
@@ -93,7 +93,8 @@ int main()//(int argc, char* argv[])
     render_setup();
 
     //simulate();
-    while(true) display();
+    int i = 0;
+    while(i++ < 10) display();
     glfwDestroyWindow(window);
     glfwTerminate();
     return 0;
@@ -143,6 +144,9 @@ void render_setup()
     GLuint vColor = glGetAttribLocation(shaderprogram, "vColor");
     glEnableVertexAttribArray(vColor);
     glVertexAttribPointer(vColor, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(sizeof(pos)));
+
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_POINT_SMOOTH);
 }
 
 void  glfw_init()
@@ -177,8 +181,6 @@ void initialize_gl()
 
     glClearColor( 0.0, 0.0, 0.0, 0.0 );
     glClearDepth(1.0f);
-    glEnable(GL_DEPTH_TEST);
-    glEnable(GL_POINT_SMOOTH);
     glViewport(0, 0, SCREEN_W, SCREEN_H);
 
     glMatrixMode(GL_PROJECTION);
@@ -207,13 +209,23 @@ void display()
         glPopMatrix();
         */
     }
+    for (int i = 0; i < N; i++)
+    {
+        int idx = i * 4;
+        std::cerr << "pos[i] = " << pos[i] << std::endl;
+    }
+    for (int i = 0; i < N; i++)
+    {
+        int idx = i * 4;
+        std::cerr << "color[i] = " << colors[i] << std::endl;
+    }
 
-    glBufferSubData(GL_ARRAY_BUFFER, 0, 3 * sizeof(GLfloat), pos);
-    glBufferSubData(GL_ARRAY_BUFFER, 3*sizeof(GLfloat), 3 * sizeof(GLfloat), colors);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(pos), pos);
+    glBufferSubData(GL_ARRAY_BUFFER, sizeof(pos), sizeof(colors), colors);
 
-    glPointSize(10);
+    glPointSize(1);
     glDrawArrays(GL_POINTS, 0, N);
-    //glDrawArrays(GL_TRIANGLES, 0, N);
+
     glfwSwapBuffers(window);
     glFlush();
 }
