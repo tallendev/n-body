@@ -2,7 +2,11 @@ CC = nvcc
 
 .SUFFIXES: .cpp .c .h .o .cu
 
-COPTS = -g -std=c++11 
+COPTS = -g -std=c++11 -lprofiler
+
+ifdef DEBUG
+DBG = -Dcudaerr
+endif
 
 INC = -I./libs -I/opt/cuda/include  -I../common/inc/ -I../common/inc/GL
 
@@ -14,15 +18,18 @@ motion.o \
 utils.o
 
 .cpp.o:
-	 $(CC) -c $(INC) $(COPTS) -o $@ $<
+	 $(CC) -c $(INC) $(DBG) $(COPTS) -o $@ $<
 
 .cu.o:
-	 $(CC) -c $(INC) $(COPTS) -o $@ $< -dc
+	 $(CC) -c $(INC) $(DBG) $(COPTS) -o $@ $< -dc
 
 all: autorun
 
+debug: 
+	$(MAKE) DEBUG=1
+
 autorun: $(OBJS) autorun.o
-	$(CC) -o $@ $(INC) $(COPTS) $(OBJS) autorun.o $(LIBDIR) $(LIBS)
+	$(CC) -o $@ $(INC) $(DBG) $(COPTS) $(OBJS) autorun.o $(LIBDIR) $(LIBS)
 
 clean:
 	-rm -f *.o

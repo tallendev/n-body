@@ -11,7 +11,7 @@
 #include "utils.h"
 
 // gravitational constant
-const double G = 1;//6.674E-11;
+const double G = 6.674E-11;
 
 const int BLOCK_THREADS = 1024; //2048;
 
@@ -20,11 +20,19 @@ void run_calculations(int N, Body* g_bodies, double timestep)
     int blocks = N / BLOCK_THREADS;
     blocks = blocks == 0 ? 1 : blocks;   
     calculate_force<<<blocks, BLOCK_THREADS>>>(N, g_bodies, timestep);
-    gpuErrchk(cudaPeekAtLastError());
-    gpuErrchk(cudaDeviceSynchronize());
+    #ifdef cudaerr
+        gpuErrchk(cudaPeekAtLastError());
+        gpuErrchk(cudaDeviceSynchronize());
+    #else
+        cudaDeviceSynchronize();
+    #endif
     update_pos<<<blocks, BLOCK_THREADS>>>(N, g_bodies);
-    gpuErrchk(cudaPeekAtLastError());
-    gpuErrchk(cudaDeviceSynchronize());
+    #ifdef cudaerr
+        gpuErrchk(cudaPeekAtLastError());
+        gpuErrchk(cudaDeviceSynchronize());
+    #else 
+        cudaDeviceSynchronize();
+    #endif
 }
 
 extern "C" __global__

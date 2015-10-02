@@ -21,6 +21,9 @@
 #include <helper_functions.h>
 #include <helper_cuda_gl.h>
 
+#include <thread>
+#include <mutex>
+
 #include "body.h"
 #include "motion.h"
 #include "utils.h"
@@ -33,13 +36,13 @@ void display();
 void render_setup();
 void dump_bodies();
 
-const int N = 2;//100;
+const int N = 5000;
 
 const int SCREEN_W = 1920;
 const int SCREEN_H = 1080;
 
 //seconds, for now.
-const double TS = .0001;
+const double TS = 1;
 
 static Body bodies[N];
 static GLFWwindow* window;
@@ -51,17 +54,23 @@ GLuint vertexshader;
 GLuint fragmentshader;
 GLuint shaderprogram;
 
-static double pos[N * 4];
-static double colors[N * 4];
+static float pos[N * 4];
+static float colors[N * 4];
 
-static double sample_rate = .016;
+static double sample_rate = 1; //.016;
+
+std::mutex render_m;
+std::mutex sim_m;
+
+std::thread sim_t;
 
 int main()//(int argc, char* argv[])
 {
+    std::cerr << "Test" << std::endl;
     srand(time(NULL));
-
-    double x = SCREEN_W/2;
-    double y = SCREEN_H/2;
+    std::cerr << "len(pos): " << sizeof(pos) << std::endl;
+    double x = 0;
+    double y = 0;
     double z = 0;
     // for now set bodies as random...
     for (size_t i = 0; i < N; i++)
@@ -79,22 +88,28 @@ int main()//(int argc, char* argv[])
             else
                 bodies[i].set_pos(j, z); 
         }
-        x = rand() % SCREEN_W;
-        y = rand() % SCREEN_H;
-        //x = ((double) rand()) / RAND_MAX;
-        //y = ((double) rand()) / RAND_MAX;
+        x = (((double) rand()) / (RAND_MAX / 2)) - 1;
+        y = (((double) rand()) / (RAND_MAX / 2)) - 1;
+        //x = rand() % SCREEN_W;
+        //y = rand() % SCREEN_H;
     }
     
-    dump_bodies();
+    //dump_bodies();
 
     glfw_init();
     initialize_gl();
     glewInit();
     render_setup();
 
-    //simulate();
-    int i = 0;
-    while(i++ < 10) display();
+    render_m.lock();
+    sim_t = std::thread([]() {simulate();});
+    while (!glfwWindowShouldClose(window) && glfwGetTime() < 60)
+    {
+        display();
+    }
+    //int i = 0;
+    //while(i++ < 100000) display();
+    sim_t.join();
     glfwDestroyWindow(window);
     glfwTerminate();
     return 0;
@@ -107,20 +122,27 @@ void simulate()
     Body* g_bodies;
     gpuErrchk(cudaMalloc((void**)&g_bodies, sizeof(bodies)));
     gpuErrchk(cudaMemcpy(g_bodies, bodies, sizeof(bodies), cudaMemcpyHostToDevice));
-    while (!glfwWindowShouldClose(window))
+    while (!glfwWindowShouldClose(window) && glfwGetTime() < 60)
     {
         //std::cerr << sizeof(bodies) << std::endl;
         run_calculations(N, g_bodies, TS);
         if (draw_timer > sample_rate)
         {
-            gpuErrchk(cudaMemcpy(bodies, g_bodies, sizeof(bodies), cudaMemcpyDeviceToHost));
-            draw_timer = 0;   
-            display();
+            sim_m.lock();
+            #ifdef cudaerr
+                gpuErrchk(cudaMemcpy(bodies, g_bodies, sizeof(bodies), cudaMemcpyDeviceToHost));
+            #else
+                cudaMemcpy(bodies, g_bodies, sizeof(bodies), cudaMemcpyDeviceToHost);
+            #endif
+            render_m.unlock();
+            draw_timer = 0; 
+            //display();
             std::cerr << "display()" << std::endl;   
-            dump_bodies();
+            //dump_bodies();
         }
         draw_timer += TS;
     }
+    render_m.unlock();
     cudaFree(g_bodies);
 }
 
@@ -131,8 +153,6 @@ void render_setup()
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
     glBufferData(GL_ARRAY_BUFFER, sizeof(pos) + sizeof(colors), NULL, GL_STATIC_DRAW);
-    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(pos), pos);
-    glBufferSubData(GL_ARRAY_BUFFER, sizeof(pos), sizeof(colors), colors);
     
     shaderprogram = InitShader("shader.vert", "shader.frag");
     glUseProgram(shaderprogram);
@@ -145,6 +165,9 @@ void render_setup()
     glEnableVertexAttribArray(vColor);
     glVertexAttribPointer(vColor, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(sizeof(pos)));
 
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_COLOR_ARRAY);
+
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_POINT_SMOOTH);
 }
@@ -156,7 +179,8 @@ void  glfw_init()
         std::cerr << "Failed to init GLFW" << std::endl;
         exit(1);
     }
-    window = glfwCreateWindow(SCREEN_W, SCREEN_H, "n-body test", NULL, NULL);
+    window = glfwCreateWindow(SCREEN_W, SCREEN_H, "n-body test", glfwGetPrimaryMonitor(), NULL);
+ //   window = glfwCreateWindow(SCREEN_W, SCREEN_H, "n-body test", NULL, NULL);
     if (!window)
     {
         std::cerr << "Failed to create window." << std::endl;
@@ -185,11 +209,11 @@ void initialize_gl()
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glOrtho(0, SCREEN_W, 0, SCREEN_H, 0, 1000.0);
 }
 
 void display()
 {
+    render_m.lock();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     for (int i = 0; i < N; i++)
@@ -203,25 +227,10 @@ void display()
         colors[idx + 1] = bodies[i].get_color(1);
         colors[idx + 2] = bodies[i].get_color(2);
         colors[idx + 3] = 1.0;
-        /*
-        glPushMatrix();
-        bodies[i].render();
-        glPopMatrix();
-        */
     }
-    for (int i = 0; i < N; i++)
-    {
-        int idx = i * 4;
-        std::cerr << "pos[i] = " << pos[i] << std::endl;
-    }
-    for (int i = 0; i < N; i++)
-    {
-        int idx = i * 4;
-        std::cerr << "color[i] = " << colors[i] << std::endl;
-    }
-
     glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(pos), pos);
     glBufferSubData(GL_ARRAY_BUFFER, sizeof(pos), sizeof(colors), colors);
+    sim_m.unlock();
 
     glPointSize(1);
     glDrawArrays(GL_POINTS, 0, N);
