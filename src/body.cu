@@ -24,6 +24,8 @@ Body::Body(double mass, double radius)
         set_acc(i, 0);                 
         set_color(i, 1.0);
     }
+//    set_pos(3, 1);
+//    set_color(3, 1);
 }
 
 extern "C" __device__ __host__

@@ -36,7 +36,7 @@ void display();
 void render_setup();
 void dump_bodies();
 
-const int N = 5000;
+const int N = 1000;
 
 const int SCREEN_W = 1920;
 const int SCREEN_H = 1080;
@@ -57,7 +57,8 @@ GLuint shaderprogram;
 static float pos[N * 4];
 static float colors[N * 4];
 
-static double sample_rate = 1; //.016;
+
+static const double sample_rate = .016;
 
 std::mutex render_m;
 std::mutex sim_m;
@@ -66,9 +67,7 @@ std::thread sim_t;
 
 int main()//(int argc, char* argv[])
 {
-    std::cerr << "Test" << std::endl;
     srand(time(NULL));
-    std::cerr << "len(pos): " << sizeof(pos) << std::endl;
     double x = 0;
     double y = 0;
     double z = 0;
@@ -93,6 +92,8 @@ int main()//(int argc, char* argv[])
         //x = rand() % SCREEN_W;
         //y = rand() % SCREEN_H;
     }
+
+    std::cerr << &bodies[0] << " " << &bodies[0].acc << " " << &bodies[0].vel << " " << &bodies[0].pos << std::endl;
     
     //dump_bodies();
 
@@ -118,7 +119,7 @@ int main()//(int argc, char* argv[])
 
 void simulate()
 {
-    double draw_timer = 0;
+    double draw_timer = .016;
     Body* g_bodies;
     gpuErrchk(cudaMalloc((void**)&g_bodies, sizeof(bodies)));
     gpuErrchk(cudaMemcpy(g_bodies, bodies, sizeof(bodies), cudaMemcpyHostToDevice));
@@ -126,7 +127,7 @@ void simulate()
     {
         //std::cerr << sizeof(bodies) << std::endl;
         run_calculations(N, g_bodies, TS);
-        if (draw_timer > sample_rate)
+        if (draw_timer - glfwGetTime() <= 0)
         {
             sim_m.lock();
             #ifdef cudaerr
@@ -135,12 +136,11 @@ void simulate()
                 cudaMemcpy(bodies, g_bodies, sizeof(bodies), cudaMemcpyDeviceToHost);
             #endif
             render_m.unlock();
-            draw_timer = 0; 
+            draw_timer == glfwGetTime() + sample_rate; 
             //display();
-            std::cerr << "display()" << std::endl;   
+            //std::cerr << "display()" << std::endl;   
             //dump_bodies();
         }
-        draw_timer += TS;
     }
     render_m.unlock();
     cudaFree(g_bodies);
@@ -223,16 +223,18 @@ void display()
         pos[idx + 1] = bodies[i].get_pos(1);
         pos[idx + 2] = bodies[i].get_pos(2);
         pos[idx + 3] = 1.0;
+  //      pos[idx + 3] = bodies[i].get_pos(3);
         colors[idx] = bodies[i].get_color(0);
         colors[idx + 1] = bodies[i].get_color(1);
         colors[idx + 2] = bodies[i].get_color(2);
         colors[idx + 3] = 1.0;
+ //       colors[idx + 3] = bodies[i].get_color(3);
     }
     glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(pos), pos);
     glBufferSubData(GL_ARRAY_BUFFER, sizeof(pos), sizeof(colors), colors);
     sim_m.unlock();
 
-    glPointSize(1);
+    glPointSize(.01);
     glDrawArrays(GL_POINTS, 0, N);
 
     glfwSwapBuffers(window);

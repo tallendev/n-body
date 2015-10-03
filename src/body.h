@@ -8,6 +8,7 @@
 
 class Body
 {
+    friend int main();
     public:
         static const size_t X = 0;
         static const size_t Y = 1;
@@ -33,7 +34,6 @@ class Body
         __device__ __host__ void update_acc(size_t idx, double delta);
         //void render();
         std::string to_string();
-
     private:
         double mass;
         double radius;
