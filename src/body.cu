@@ -118,15 +118,6 @@ void Body::update_acc(size_t idx, double delta)
     acc[idx] += delta;
 }
 
-/*
-void Body::render()
-{
-    glColor3f(color[0], color[1], color[2]);
-    glTranslated(pos[X], pos[Y], pos[Z]);
-    gluSphere(body, radius, slices, stacks); 
-}
-*/
-
 std::string Body::to_string()
 {
     size_t i;

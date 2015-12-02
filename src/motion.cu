@@ -44,17 +44,21 @@ void calculate_force(int nbodies, Body* g_bodies, double timestep)
     double dist;
     double mass;
     int i = threadIdx.x + blockIdx.x * blockDim.x;
-    if (i < nbodies)
-    {
+    //if (i < nbodies)
+    //{
         for (int j = 0; j < nbodies; j++)
         {
             if (i != j)
             {
+                //dx = g_bodies[i].get_pos(0) - g_bodies[j].get_pos(0);
+                //dy = g_bodies[i].get_pos(1) - g_bodies[j].get_pos(1);
+                //dz = g_bodies[i].get_pos(2) - g_bodies[j].get_pos(2);
                 dx = g_bodies[j].get_pos(0) - g_bodies[i].get_pos(0);
                 dy = g_bodies[j].get_pos(1) - g_bodies[i].get_pos(1);
                 dz = g_bodies[j].get_pos(2) - g_bodies[i].get_pos(2);
                 dist = sqrt(dx * dx + dy * dy + dz * dz);
                 dist = dist * dist * dist;
+                dist = dist > 1 ? dist : 1;
                 //omit mass of current body, must divide by it later to get accel anyway
                 mass = timestep * G * g_bodies[j].get_mass();
                 g_bodies[i].update_acc(0, mass * dx / dist);
@@ -62,7 +66,7 @@ void calculate_force(int nbodies, Body* g_bodies, double timestep)
                 g_bodies[i].update_acc(2, mass * dz / dist);
             }
         }
-    }
+    //}
 }
 
 extern "C" __global__

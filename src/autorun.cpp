@@ -42,7 +42,7 @@ const int SCREEN_W = 1920;
 const int SCREEN_H = 1080;
 
 //seconds, for now.
-const double TS = 1;
+const double TS =  1;
 
 static Body bodies[N];
 static GLFWwindow* window;
@@ -76,16 +76,24 @@ int main()//(int argc, char* argv[])
     {
         if (i == 0)
         {
-            bodies[i].set_mass(.1);
+            //bodies[i].set_mass(1000);//.1);
         }
         for (size_t j = 0; j < Body::DIMS; j++)
         {
-            if (j == 0)
+            if (j == 0 && i != 0)
+            {
                 bodies[i].set_pos(j, x); 
-            else if (j == 1)
+                bodies[i].update_acc(j, .00001);
+            }
+            else if (j == 1 && i != 0)
+            {
                 bodies[i].set_pos(j, y);
+                bodies[i].update_acc(j, .00001);
+            }
             else
+            {
                 bodies[i].set_pos(j, z); 
+            }
         }
         x = (((double) rand()) / (RAND_MAX / 2)) - 1;
         y = (((double) rand()) / (RAND_MAX / 2)) - 1;
@@ -119,28 +127,22 @@ int main()//(int argc, char* argv[])
 
 void simulate()
 {
-    double draw_timer = .016;
+    //double draw_timer = .016;
+    int frames = 0;
     Body* g_bodies;
     gpuErrchk(cudaMalloc((void**)&g_bodies, sizeof(bodies)));
     gpuErrchk(cudaMemcpy(g_bodies, bodies, sizeof(bodies), cudaMemcpyHostToDevice));
     while (!glfwWindowShouldClose(window) && glfwGetTime() < 60)
     {
-        //std::cerr << sizeof(bodies) << std::endl;
         run_calculations(N, g_bodies, TS);
-        if (draw_timer - glfwGetTime() <= 0)
-        {
-            sim_m.lock();
-            #ifdef cudaerr
-                gpuErrchk(cudaMemcpy(bodies, g_bodies, sizeof(bodies), cudaMemcpyDeviceToHost));
-            #else
-                cudaMemcpy(bodies, g_bodies, sizeof(bodies), cudaMemcpyDeviceToHost);
-            #endif
-            render_m.unlock();
-            draw_timer == glfwGetTime() + sample_rate; 
-            //display();
-            //std::cerr << "display()" << std::endl;   
-            //dump_bodies();
-        }
+        sim_m.lock();
+        #ifdef cudaerr
+            gpuErrchk(cudaMemcpy(bodies, g_bodies, sizeof(bodies), cudaMemcpyDeviceToHost));
+        #else
+            cudaMemcpy(bodies, g_bodies, sizeof(bodies), cudaMemcpyDeviceToHost);
+        #endif
+        render_m.unlock();
+        frames++;
     }
     render_m.unlock();
     cudaFree(g_bodies);
