@@ -83,12 +83,12 @@ int main()//(int argc, char* argv[])
             if (j == 0 && i != 0)
             {
                 bodies[i].set_pos(j, x); 
-                bodies[i].update_acc(j, .00001);
+//                bodies[i].update_acc(j, .00001);
             }
             else if (j == 1 && i != 0)
             {
                 bodies[i].set_pos(j, y);
-                bodies[i].update_acc(j, .00001);
+//                bodies[i].update_acc(j, .00001);
             }
             else
             {
@@ -132,20 +132,23 @@ void simulate()
     Body* g_bodies;
     gpuErrchk(cudaMalloc((void**)&g_bodies, sizeof(bodies)));
     gpuErrchk(cudaMemcpy(g_bodies, bodies, sizeof(bodies), cudaMemcpyHostToDevice));
-    while (!glfwWindowShouldClose(window) && glfwGetTime() < 60)
+    double time = 0;
+    while (!glfwWindowShouldClose(window) && (time = glfwGetTime()) < 60)
     {
         run_calculations(N, g_bodies, TS);
-        sim_m.lock();
+        frames++;
+//        sim_m.lock();
         #ifdef cudaerr
             gpuErrchk(cudaMemcpy(bodies, g_bodies, sizeof(bodies), cudaMemcpyDeviceToHost));
         #else
             cudaMemcpy(bodies, g_bodies, sizeof(bodies), cudaMemcpyDeviceToHost);
         #endif
-        render_m.unlock();
-        frames++;
+//        render_m.unlock();
+//        std::cerr << "Time: " << time << std::endl;
     }
     render_m.unlock();
     cudaFree(g_bodies);
+    std::cerr << "Done!" << std::endl;
 }
 
 void render_setup()
@@ -215,7 +218,7 @@ void initialize_gl()
 
 void display()
 {
-    render_m.lock();
+//    render_m.lock();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     for (int i = 0; i < N; i++)
@@ -234,7 +237,7 @@ void display()
     }
     glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(pos), pos);
     glBufferSubData(GL_ARRAY_BUFFER, sizeof(pos), sizeof(colors), colors);
-    sim_m.unlock();
+  //  sim_m.unlock();
 
     glPointSize(.01);
     glDrawArrays(GL_POINTS, 0, N);
