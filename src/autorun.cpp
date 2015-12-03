@@ -32,17 +32,17 @@ int main();//(int argc, char* argv[]);
 void simulate();
 void glfw_init();
 void initialize_gl();
-void display();
+void display(float*, float*, float*);
 void render_setup();
 void dump_bodies();
 
-const int N = 1000;
+const int N = 16384;//1024;//2000;//98304;
 
 const int SCREEN_W = 1920;
 const int SCREEN_H = 1080;
 
 //seconds, for now.
-const double TS =  1;
+const float TS =  1;//.000000000001f;
 
 static Body bodies[N];
 static GLFWwindow* window;
@@ -68,9 +68,9 @@ std::thread sim_t;
 int main()//(int argc, char* argv[])
 {
     srand(time(NULL));
-    double x = 0;
-    double y = 0;
-    double z = 0;
+    float x = 0;
+    float y = 0;
+    float z = 0;
     // for now set bodies as random...
     for (size_t i = 0; i < N; i++)
     {
@@ -80,45 +80,30 @@ int main()//(int argc, char* argv[])
         }
         for (size_t j = 0; j < Body::DIMS; j++)
         {
-            if (j == 0 && i != 0)
+            if (j == 0)
             {
                 bodies[i].set_pos(j, x); 
-//                bodies[i].update_acc(j, .00001);
             }
-            else if (j == 1 && i != 0)
+            else if (j == 1)
             {
                 bodies[i].set_pos(j, y);
-//                bodies[i].update_acc(j, .00001);
             }
             else
             {
                 bodies[i].set_pos(j, z); 
             }
         }
-        x = (((double) rand()) / (RAND_MAX / 2)) - 1;
-        y = (((double) rand()) / (RAND_MAX / 2)) - 1;
-        //x = rand() % SCREEN_W;
-        //y = rand() % SCREEN_H;
+        x = (((float) rand()) / (RAND_MAX / 2)) - 1;
+        y = (((float) rand()) / (RAND_MAX / 2)) - 1;
     }
 
     std::cerr << &bodies[0] << " " << &bodies[0].acc << " " << &bodies[0].vel << " " << &bodies[0].pos << std::endl;
     
-    //dump_bodies();
-
     glfw_init();
     initialize_gl();
     glewInit();
     render_setup();
-
-    render_m.lock();
-    sim_t = std::thread([]() {simulate();});
-    while (!glfwWindowShouldClose(window) && glfwGetTime() < 60)
-    {
-        display();
-    }
-    //int i = 0;
-    //while(i++ < 100000) display();
-    sim_t.join();
+    simulate();
     glfwDestroyWindow(window);
     glfwTerminate();
     return 0;
@@ -127,27 +112,123 @@ int main()//(int argc, char* argv[])
 
 void simulate()
 {
-    //double draw_timer = .016;
     int frames = 0;
-    Body* g_bodies;
-    gpuErrchk(cudaMalloc((void**)&g_bodies, sizeof(bodies)));
-    gpuErrchk(cudaMemcpy(g_bodies, bodies, sizeof(bodies), cudaMemcpyHostToDevice));
+
+    float* mass = new float[N];
+    float* posx = new float[N];
+    float* posy = new float[N];
+    float* posz = new float[N];
+    float* velx = new float[N];
+    float* vely = new float[N];
+    float* velz = new float[N];
+    float* accx = new float[N];
+    float* accy = new float[N];
+    float* accz = new float[N];
+
+    for (int i = 0; i < N; i++)
+    {
+        mass[i] = bodies[i].get_mass();
+        posx[i] = bodies[i].get_pos(0);
+        posy[i] = bodies[i].get_pos(1);
+        posz[i] = bodies[i].get_pos(2);
+        velx[i] = bodies[i].get_vel(0);
+        vely[i] = bodies[i].get_vel(1);
+        velz[i] = bodies[i].get_vel(2);
+        accx[i] = bodies[i].get_acc(0);
+        accy[i] = bodies[i].get_acc(1);
+        accz[i] = bodies[i].get_acc(2);
+    }
+
+    float* gmass;
+    float* gposx;
+    float* gposy;
+    float* gposz;
+    float* gvelx;
+    float* gvely;
+    float* gvelz;
+    float* gaccx;
+    float* gaccy;
+    float* gaccz;
+
+    cudaStream_t stream1;
+    cudaStream_t stream2;
+    cudaStream_t stream3;
+    cudaStream_t stream4;
+    cudaStreamCreate(&stream1);
+    cudaStreamCreate(&stream2);
+    cudaStreamCreate(&stream3);
+    cudaStreamCreate(&stream4);
+//    #ifdef cudaerr
+//        gpuErrchk(cudaMalloc((void**)&gmass, sizeof(mass)));
+//        gpuErrchk(cudaMemcpyAsync(gmass, mass, sizeof(mass), cudaMemcpyHostToDevice, stream1));
+//    #else
+        cudaMalloc((void**)&gmass, N * sizeof(float));
+        cudaMemcpyAsync(gmass, mass, N * sizeof(float), cudaMemcpyHostToDevice, stream1);
+        cudaMalloc((void**)&gposx, N * sizeof(float));
+        cudaMemcpyAsync(gposx, posx,N * sizeof(float) , cudaMemcpyHostToDevice, stream1);
+
+        cudaMalloc((void**)&gposy, N * sizeof(float));
+        cudaMemcpyAsync(gposy, posy, N * sizeof(float), cudaMemcpyHostToDevice, stream1);
+
+        cudaMalloc((void**)&gposz, N * sizeof(float));
+        cudaMemcpyAsync(gposz, posz, N * sizeof(float), cudaMemcpyHostToDevice, stream1);
+
+        cudaMalloc((void**)&gvelx, N * sizeof(float));
+        cudaMemcpyAsync(gvelx, velx, N * sizeof(float), cudaMemcpyHostToDevice, stream1);
+        cudaMalloc((void**)&gvely, N * sizeof(float));
+        cudaMemcpyAsync(gvely, vely, N * sizeof(float), cudaMemcpyHostToDevice, stream1);
+        cudaMalloc((void**)&gvelz, N * sizeof(float));
+        cudaMemcpyAsync(gvelz, velz, N * sizeof(float), cudaMemcpyHostToDevice, stream1);
+        cudaMalloc((void**)&gaccx, N * sizeof(float));
+        cudaMemcpyAsync(gaccx, accx, N * sizeof(float), cudaMemcpyHostToDevice, stream1);
+        cudaMalloc((void**)&gaccy, N * sizeof(float));
+        cudaMemcpyAsync(gaccy, accy, N * sizeof(float), cudaMemcpyHostToDevice, stream1);
+        cudaMalloc((void**)&gaccz, N * sizeof(float));
+        cudaMemcpyAsync(gaccz, accz, N * sizeof(float), cudaMemcpyHostToDevice, stream1);
+//    #endif
     double time = 0;
     while (!glfwWindowShouldClose(window) && (time = glfwGetTime()) < 60)
     {
-        run_calculations(N, g_bodies, TS);
+        sim_t = std::thread([stream2, stream3, gmass, gposx, gposy, 
+                              gposz, gvelx, gvely, gvelz, gaccx, gaccy, gaccz]() 
+                            {run_calculations(N, TS, stream2, stream3, 
+                                               gmass, gposx, gposy, gposz,
+                                               gvelx, gvely, gvelz, gaccx,
+                                               gaccy, gaccz);});
+        //display(posx, posy, posz);
         frames++;
-//        sim_m.lock();
-        #ifdef cudaerr
-            gpuErrchk(cudaMemcpy(bodies, g_bodies, sizeof(bodies), cudaMemcpyDeviceToHost));
-        #else
-            cudaMemcpy(bodies, g_bodies, sizeof(bodies), cudaMemcpyDeviceToHost);
-        #endif
-//        render_m.unlock();
-//        std::cerr << "Time: " << time << std::endl;
+//        #ifdef cudaerr
+//        #else
+            cudaMemcpyAsync(posx, gposx, N * sizeof(float), 
+                            cudaMemcpyDeviceToHost, stream4);
+            cudaMemcpyAsync(posy, gposy, N * sizeof(float), 
+                            cudaMemcpyDeviceToHost, stream4);
+            cudaMemcpyAsync(posz, gposz, N * sizeof(float),
+                            cudaMemcpyDeviceToHost, stream4);
+//        #endif
+        sim_t.join();
     }
-    render_m.unlock();
-    cudaFree(g_bodies);
+    cudaFree(mass);
+    cudaFree(gposx);
+    cudaFree(gposy);
+    cudaFree(gposz);
+    cudaFree(gvelx);
+    cudaFree(gvely);
+    cudaFree(gvelz);
+    cudaFree(gaccx);
+    cudaFree(gaccy);
+    cudaFree(gaccz);
+    delete[] mass;
+    delete[] posx;
+    delete[] posy;
+    delete[] posz;
+    delete[] velx;
+    delete[] vely;
+    delete[] velz;
+    delete[] accx;
+    delete[] accy;
+    delete[] accz;
+    std::cerr << "Total Frames: " << frames << std::endl;
     std::cerr << "Done!" << std::endl;
 }
 
@@ -216,30 +297,26 @@ void initialize_gl()
     glLoadIdentity();
 }
 
-void display()
+void display(float* posx, float* posy, float* posz)
 {
-//    render_m.lock();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     for (int i = 0; i < N; i++)
     {
         int idx = i * 4;
-        pos[idx] = bodies[i].get_pos(0);
-        pos[idx + 1] = bodies[i].get_pos(1);
-        pos[idx + 2] = bodies[i].get_pos(2);
+        pos[idx] = posx[i];
+        pos[idx + 1] = posy[i];
+        pos[idx + 2] = posz[i];
         pos[idx + 3] = 1.0;
-  //      pos[idx + 3] = bodies[i].get_pos(3);
         colors[idx] = bodies[i].get_color(0);
         colors[idx + 1] = bodies[i].get_color(1);
         colors[idx + 2] = bodies[i].get_color(2);
         colors[idx + 3] = 1.0;
- //       colors[idx + 3] = bodies[i].get_color(3);
     }
     glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(pos), pos);
     glBufferSubData(GL_ARRAY_BUFFER, sizeof(pos), sizeof(colors), colors);
-  //  sim_m.unlock();
 
-    glPointSize(.01);
+    glPointSize(.0001);
     glDrawArrays(GL_POINTS, 0, N);
 
     glfwSwapBuffers(window);

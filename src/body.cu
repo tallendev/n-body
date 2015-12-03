@@ -6,16 +6,16 @@
 
 Body::Body() : Body::Body(.01, .75) {}
 
-Body::Body(double mass, double radius)
+Body::Body(float mass, float radius)
 {
     this->mass = mass;
     this->radius = radius;
-    body = gluNewQuadric();
+//    body = gluNewQuadric();
 
-    gluQuadricDrawStyle(body, GLU_FILL);
-    gluQuadricNormals(body, GLU_SMOOTH);
-    gluQuadricOrientation(body, GLU_OUTSIDE);
-    gluQuadricTexture(body, GL_TRUE);
+//    gluQuadricDrawStyle(body, GLU_FILL);
+//    gluQuadricNormals(body, GLU_SMOOTH);
+//    gluQuadricOrientation(body, GLU_OUTSIDE);
+//    gluQuadricTexture(body, GL_TRUE);
 
     for (size_t i = 0; i < DIMS; i++)
     {
@@ -29,91 +29,91 @@ Body::Body(double mass, double radius)
 }
 
 extern "C" __device__ __host__
-void Body::set_mass(double mass)
+void Body::set_mass(float mass)
 {
     this->mass = mass;
 }
 
 extern "C" __device__ __host__
-void Body::set_radius(double radius)
+void Body::set_radius(float radius)
 {
     this->radius = radius;
 }
 
 extern "C" __device__ __host__
-double Body::get_color(size_t idx)
+float Body::get_color(size_t idx)
 {
     return color[idx];
 }
 
 extern "C" __device__ __host__
-double Body::get_mass()
+float Body::get_mass()
 {
     return mass;
 }
 
 extern "C" __device__ __host__
-double Body::get_radius()
+float Body::get_radius()
 {
     return radius;
 }
 
 extern "C" __device__ __host__
-double Body::get_pos(size_t idx)
+float Body::get_pos(size_t idx)
 {
     return pos[idx];
 }
 
 extern "C" __device__ __host__
-double Body::get_vel(size_t idx)
+float Body::get_vel(size_t idx)
 {
     return vel[idx];
 }
 
 extern "C" __device__ __host__
-double Body::get_acc(size_t idx)
+float Body::get_acc(size_t idx)
 {
     return acc[idx];
 }
 
 extern "C" __device__ __host__
-void Body::set_pos(size_t idx, double val)
+void Body::set_pos(size_t idx, float val)
 {
     pos[idx] = val;
 }
 
 extern "C" __device__ __host__
-void Body::set_vel(size_t idx, double val)
+void Body::set_vel(size_t idx, float val)
 {
     vel[idx] = val;
 }
 
 extern "C" __device__ __host__
-void Body::set_acc(size_t idx, double val)
+void Body::set_acc(size_t idx, float val)
 {
     acc[idx] = val;
 }
 
 extern "C" __device__ __host__
-void Body::set_color(size_t idx, double val)
+void Body::set_color(size_t idx, float val)
 {
     color[idx] = val;
 }
 
 extern "C" __device__ __host__
-void Body::update_pos(size_t idx, double delta)
+void Body::update_pos(size_t idx, float delta)
 {
     pos[idx] += delta;
 }
 
 extern "C" __device__ __host__
-void Body::update_vel(size_t idx, double delta)
+void Body::update_vel(size_t idx, float delta)
 {
     vel[idx] += delta;
 }
 
 extern "C" __device__ __host__
-void Body::update_acc(size_t idx, double delta)
+void Body::update_acc(size_t idx, float delta)
 {
     acc[idx] += delta;
 }
