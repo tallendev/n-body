@@ -32,7 +32,7 @@ void run_calculations(int N, float timestep,
     int blocks = N / BLOCK_THREADS;
     blocks = N % BLOCK_THREADS == 0 ? blocks : blocks + 1;
 
-    calculate_force<<<blocks, BLOCK_THREADS, sizeof(float) * 4, stream1>>>(N,  timestep,
+    calculate_force<<<blocks, BLOCK_THREADS, 0, stream1>>>(N,  timestep,
                 mass, posx, posy, posz, accx, accy, accz);
     #ifdef cudaerr
         gpuErrchk(cudaPeekAtLastError());
