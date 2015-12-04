@@ -2,7 +2,7 @@ CC = nvcc
 
 .SUFFIXES: .cpp .c .h .o .cu
 
-COPTS = -g -std=c++11 -lprofiler #-O2 #-ftz=true
+COPTS = -g -std=c++11 #-lprofiler #-O2 #-ftz=true
 
 ifdef DEBUG
 DBG = -Dcudaerr

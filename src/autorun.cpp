@@ -104,8 +104,6 @@ int main()//(int argc, char* argv[])
     glewInit();
     render_setup();
     simulate();
-    glfwDestroyWindow(window);
-    glfwTerminate();
     return 0;
 }
 
@@ -114,16 +112,36 @@ void simulate()
 {
     int frames = 0;
 
-    float* mass = new float[N];
-    float* posx = new float[N];
-    float* posy = new float[N];
-    float* posz = new float[N];
-    float* velx = new float[N];
-    float* vely = new float[N];
-    float* velz = new float[N];
-    float* accx = new float[N];
-    float* accy = new float[N];
-    float* accz = new float[N];
+    float* mass;// = new float[N];
+    float* posx;// = new float[N];
+    float* posy;// = new float[N];
+    float* posz;// = new float[N];
+    float* velx;// = new float[N];
+    float* vely;// = new float[N];
+    float* velz;// = new float[N];
+    float* accx;// = new float[N];
+    float* accy;// = new float[N];
+    float* accz;// = new float[N];
+
+    cudaHostAlloc((void**)&mass, 10 * N * sizeof(float), cudaHostAllocDefault);
+    posx = &mass[N];
+    posy = &posx[N];
+    posz = &posy[N];
+    velx = &posz[N];
+    vely = &velx[N];
+    velz = &vely[N];
+    accx = &velz[N];
+    accy = &accx[N];
+    accz = &accy[N];
+//    cudaHostAlloc((void**)&posy, N * sizeof(float), cudaHostAllocDefault);
+//    cudaHostAlloc((void**)&posz, N * sizeof(float), cudaHostAllocDefault);
+//    cudaHostAlloc((void**)&velx, N * sizeof(float), cudaHostAllocDefault);
+//    cudaHostAlloc((void**)&vely, N * sizeof(float), cudaHostAllocDefault);
+//    cudaHostAlloc((void**)&velz, N * sizeof(float), cudaHostAllocDefault);
+//    cudaHostAlloc((void**)&accx, N * sizeof(float), cudaHostAllocDefault);
+//    cudaHostAlloc((void**)&accy, N * sizeof(float), cudaHostAllocDefault);
+//    cudaHostAlloc((void**)&accz, N * sizeof(float), cudaHostAllocDefault);
+
 
     for (int i = 0; i < N; i++)
     {
@@ -162,29 +180,48 @@ void simulate()
 //        gpuErrchk(cudaMalloc((void**)&gmass, sizeof(mass)));
 //        gpuErrchk(cudaMemcpyAsync(gmass, mass, sizeof(mass), cudaMemcpyHostToDevice, stream1));
 //    #else
-        cudaMalloc((void**)&gmass, N * sizeof(float));
-        cudaMemcpyAsync(gmass, mass, N * sizeof(float), cudaMemcpyHostToDevice, stream1);
+        cudaMalloc((void**)&gmass, 10 * N * sizeof(float));
+        cudaMemcpyAsync(gmass, mass, 10 * N * sizeof(float), cudaMemcpyHostToDevice, stream1);
+        gposx = &gmass[N];
+        gposy = &gposx[N];
+        gposz = &gposy[N];
+        gvelx = &gposz[N];
+        gvely = &gvelx[N];
+        gvelz = &gvely[N];
+        gaccx = &gvelz[N];
+        gaccy = &gaccx[N];
+        gaccz = &gaccy[N];
+        
+/*
         cudaMalloc((void**)&gposx, N * sizeof(float));
+        //cudaHostAlloc((void**)&gposx, N * sizeof(float), cudaHostAllocDefault);
         cudaMemcpyAsync(gposx, posx,N * sizeof(float) , cudaMemcpyHostToDevice, stream1);
 
         cudaMalloc((void**)&gposy, N * sizeof(float));
         cudaMemcpyAsync(gposy, posy, N * sizeof(float), cudaMemcpyHostToDevice, stream1);
 
         cudaMalloc((void**)&gposz, N * sizeof(float));
+        //cudaHostAlloc((void**)&gposz, N * sizeof(float), cudaHostAllocDefault);
         cudaMemcpyAsync(gposz, posz, N * sizeof(float), cudaMemcpyHostToDevice, stream1);
 
         cudaMalloc((void**)&gvelx, N * sizeof(float));
         cudaMemcpyAsync(gvelx, velx, N * sizeof(float), cudaMemcpyHostToDevice, stream1);
+
         cudaMalloc((void**)&gvely, N * sizeof(float));
         cudaMemcpyAsync(gvely, vely, N * sizeof(float), cudaMemcpyHostToDevice, stream1);
+
         cudaMalloc((void**)&gvelz, N * sizeof(float));
         cudaMemcpyAsync(gvelz, velz, N * sizeof(float), cudaMemcpyHostToDevice, stream1);
+
         cudaMalloc((void**)&gaccx, N * sizeof(float));
         cudaMemcpyAsync(gaccx, accx, N * sizeof(float), cudaMemcpyHostToDevice, stream1);
+
         cudaMalloc((void**)&gaccy, N * sizeof(float));
         cudaMemcpyAsync(gaccy, accy, N * sizeof(float), cudaMemcpyHostToDevice, stream1);
+
         cudaMalloc((void**)&gaccz, N * sizeof(float));
-        cudaMemcpyAsync(gaccz, accz, N * sizeof(float), cudaMemcpyHostToDevice, stream1);
+        gpuErrchk(cudaMemcpyAsync(gaccz, accz, N * sizeof(float), cudaMemcpyHostToDevice, stream1));
+*/
 //    #endif
     double time = 0;
     while (!glfwWindowShouldClose(window) && (time = glfwGetTime()) < 60)
@@ -199,16 +236,20 @@ void simulate()
         frames++;
 //        #ifdef cudaerr
 //        #else
-            cudaMemcpyAsync(posx, gposx, N * sizeof(float), 
-                            cudaMemcpyDeviceToHost, stream4);
-            cudaMemcpyAsync(posy, gposy, N * sizeof(float), 
-                            cudaMemcpyDeviceToHost, stream4);
-            cudaMemcpyAsync(posz, gposz, N * sizeof(float),
-                            cudaMemcpyDeviceToHost, stream4);
+        // Posy, posz are the next in memory...
+        cudaMemcpyAsync(posx, gposx, 3 * N * sizeof(float), 
+                        cudaMemcpyDeviceToHost, stream4);
+//        cudaMemcpyAsync(posy, gposy, N * sizeof(float), 
+//                        cudaMemcpyDeviceToHost, stream4);
+//        cudaMemcpyAsync(posz, gposz, N * sizeof(float),
+//                        cudaMemcpyDeviceToHost, stream4);
 //        #endif
         sim_t.join();
     }
-    cudaFree(mass);
+    cudaThreadSynchronize();
+    glfwDestroyWindow(window);
+    glfwTerminate();
+    cudaFree(gmass);
     cudaFree(gposx);
     cudaFree(gposy);
     cudaFree(gposz);
@@ -218,16 +259,28 @@ void simulate()
     cudaFree(gaccx);
     cudaFree(gaccy);
     cudaFree(gaccz);
+    cudaFreeHost(mass);
+    /*
+    cudaFreeHost(posx);
+    cudaFreeHost(posy);
+    cudaFreeHost(posz);
+    cudaFreeHost(velx);
+    cudaFreeHost(vely);
+    cudaFreeHost(velz);
+    cudaFreeHost(accx);
+    cudaFreeHost(accy);
+    cudaFreeHost(accz);
     delete[] mass;
-    delete[] posx;
-    delete[] posy;
-    delete[] posz;
-    delete[] velx;
-    delete[] vely;
-    delete[] velz;
-    delete[] accx;
-    delete[] accy;
-    delete[] accz;
+    */
+    //delete[] posx;
+    //delete[] posy;
+    //delete[] posz;
+    //delete[] velx;
+    //delete[] vely;
+    //delete[] velz;
+    //delete[] accx;
+    //delete[] accy;
+    //delete[] accz;
     std::cerr << "Total Frames: " << frames << std::endl;
     std::cerr << "Done!" << std::endl;
 }
