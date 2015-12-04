@@ -1,0 +1,44 @@
+0x66ede0 0x66ede8 0x66edf4 0x66ee00
+GL: 4.5.0 NVIDIA 358.16 NVIDIA Corporation
+==18137== NVPROF is profiling process 18137, command: ./autorun --benchmark -numdevices=2 -i=1
+attribute vec4 vColor;
+attribute vec4 vPosition;
+
+varying vec4 color;
+
+void main()
+{
+    gl_Position = vPosition;
+    color = vColor;
+}
+varying vec4 color;
+
+void main()
+{
+    gl_FragColor = color;
+}
+Total Frames: 557
+Done!
+==18137== Profiling application: ./autorun --benchmark -numdevices=2 -i=1
+==18137== Warning: Found 1006 invalid records in the result.
+==18137== Warning: This can happen if device ran out of memory or if a device kernel was stopped due to an assertion.
+==18137== Profiling result:
+Time(%)      Time     Calls       Avg       Min       Max  Name
+ 99.92%  71.5944s        54  1.32582s  1.32236s  1.33345s  calculate_force
+  0.06%  39.920ms        54  739.27us  414.21us  1.0104ms  update_pos
+  0.03%  19.919ms      1681  11.849us  8.1570us  78.655us  [CUDA memcpy HtoH]
+
+==18137== API calls:
+Time(%)      Time     Calls       Avg       Min       Max  Name
+ 58.94%  60.9870s      1114  54.746ms  6.9850us  1.33361s  cudaLaunch
+ 41.01%  42.4381s      1681  25.246ms  10.674us  1.33362s  cudaMemcpyAsync
+  0.04%  41.445ms         4  10.361ms  5.1510us  41.428ms  cudaStreamCreate
+  0.00%  1.7089ms     10583     161ns     109ns  6.6740us  cudaSetupArgument
+  0.00%  926.12us      1114     831ns     262ns  14.504us  cudaConfigureCall
+  0.00%  362.62us        10  36.262us  3.0310us  330.26us  cudaHostAlloc
+  0.00%  164.28us        83  1.9790us      91ns  70.785us  cuDeviceGetAttribute
+  0.00%  23.503us         1  23.503us  23.503us  23.503us  cuDeviceTotalMem
+  0.00%  19.183us         1  19.183us  19.183us  19.183us  cuDeviceGetName
+  0.00%  7.8400us        10     784ns     444ns  3.0110us  cudaFree
+  0.00%  1.0360us         2     518ns     262ns     774ns  cuDeviceGetCount
+  0.00%     338ns         2     169ns     130ns     208ns  cuDeviceGet

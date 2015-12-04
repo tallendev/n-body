@@ -1,0 +1,43 @@
+0x66ecc0 0x66ecc8 0x66ecd4 0x66ece0
+GL: 4.5.0 NVIDIA 358.16 NVIDIA Corporation
+==19055== NVPROF is profiling process 19055, command: ./autorun --benchmark -numdevices=2 -i=1
+attribute vec4 vColor;
+attribute vec4 vPosition;
+
+varying vec4 color;
+
+void main()
+{
+    gl_Position = vPosition;
+    color = vColor;
+}
+varying vec4 color;
+
+void main()
+{
+    gl_FragColor = color;
+}
+Total Frames: 1634
+Done!
+==19055== Profiling application: ./autorun --benchmark -numdevices=2 -i=1
+==19055== Profiling result:
+Time(%)      Time     Calls       Avg       Min       Max  Name
+ 99.88%  86.7063s      1634  53.064ms  44.352ms  57.549ms  calculate_force
+  0.07%  56.504ms      4902  11.526us  11.168us  22.400us  [CUDA memcpy DtoH]
+  0.05%  43.296ms      1634  26.497us  12.160us  30.400us  update_pos
+  0.00%  99.520us        10  9.9520us  9.6320us  10.944us  [CUDA memcpy HtoD]
+
+==19055== API calls:
+Time(%)      Time     Calls       Avg       Min       Max  Name
+ 56.22%  59.6346s      3268  18.248ms  7.7460us  57.132ms  cudaLaunch
+ 25.63%  27.1918s        10  2.71918s  2.5490us  27.1917s  cudaFree
+ 18.10%  19.1972s      4912  3.9082ms  25.382us  57.173ms  cudaMemcpyAsync
+  0.05%  47.986ms         4  11.997ms  5.4730us  47.955ms  cudaStreamCreate
+  0.01%  5.7075ms     31046     183ns     108ns  213.72us  cudaSetupArgument
+  0.00%  3.8056ms      3268  1.1640us     231ns  24.574us  cudaConfigureCall
+  0.00%  163.82us        83  1.9730us      92ns  70.765us  cuDeviceGetAttribute
+  0.00%  139.10us        10  13.910us  3.2210us  107.16us  cudaMalloc
+  0.00%  23.258us         1  23.258us  23.258us  23.258us  cuDeviceTotalMem
+  0.00%  18.716us         1  18.716us  18.716us  18.716us  cuDeviceGetName
+  0.00%  1.1150us         2     557ns     223ns     892ns  cuDeviceGetCount
+  0.00%     413ns         2     206ns     147ns     266ns  cuDeviceGet

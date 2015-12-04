@@ -1,0 +1,45 @@
+0x66efa0 0x66efa8 0x66efb4 0x66efc0
+GL: 4.5.0 NVIDIA 358.16 NVIDIA Corporation
+==27050== NVPROF is profiling process 27050, command: ./autorun --benchmark -numdevices=2 -i=1
+attribute vec4 vColor;
+attribute vec4 vPosition;
+
+varying vec4 color;
+
+void main()
+{
+    gl_Position = vPosition;
+    color = vColor;
+}
+varying vec4 color;
+
+void main()
+{
+    gl_FragColor = color;
+}
+Total Frames: 1908
+Done!
+==27050== Profiling application: ./autorun --benchmark -numdevices=2 -i=1
+==27050== Profiling result:
+Time(%)      Time     Calls       Avg       Min       Max  Name
+ 99.89%  81.4684s      1908  42.698ms  42.676ms  46.025ms  calculate_force
+  0.08%  64.516ms      5724  11.271us  11.168us  19.072us  [CUDA memcpy DtoH]
+  0.03%  27.913ms      1908  14.629us  8.8000us  26.240us  update_pos
+  0.00%  122.14us        10  12.214us  10.944us  12.480us  [CUDA memcpy HtoD]
+
+==27050== API calls:
+Time(%)      Time     Calls       Avg       Min       Max  Name
+ 57.16%  59.5811s      3816  15.614ms  6.6240us  46.022ms  cudaLaunch
+ 21.81%  22.7315s      5734  3.9643ms  3.4450us  49.232ms  cudaMemcpyAsync
+ 20.97%  21.8605s        10  2.18605s  3.7950us  21.8603s  cudaFree
+  0.04%  39.530ms         9  4.3922ms  2.8100us  39.504ms  cudaHostAlloc
+  0.01%  8.2918ms     36252     228ns     110ns  217.65us  cudaSetupArgument
+  0.00%  5.0653ms      3816  1.3270us     227ns  20.881us  cudaConfigureCall
+  0.00%  354.59us         9  39.399us  5.1070us  304.22us  cudaFreeHost
+  0.00%  167.66us        83  2.0200us      93ns  71.246us  cuDeviceGetAttribute
+  0.00%  115.23us        10  11.522us  2.7750us  84.765us  cudaMalloc
+  0.00%  28.000us         4  7.0000us  4.8000us  12.266us  cudaStreamCreate
+  0.00%  23.238us         1  23.238us  23.238us  23.238us  cuDeviceTotalMem
+  0.00%  18.193us         1  18.193us  18.193us  18.193us  cuDeviceGetName
+  0.00%     961ns         2     480ns     192ns     769ns  cuDeviceGetCount
+  0.00%     400ns         2     200ns     106ns     294ns  cuDeviceGet

@@ -1,0 +1,46 @@
+0x66fcc0 0x66fcc8 0x66fcd4 0x66fce0
+GL: 4.5.0 NVIDIA 358.16 NVIDIA Corporation
+==20202== NVPROF is profiling process 20202, command: ./autorun --benchmark -numdevices=2 -i=1
+attribute vec4 vColor;
+attribute vec4 vPosition;
+
+varying vec4 color;
+
+void main()
+{
+    gl_Position = vPosition;
+    color = vColor;
+}
+varying vec4 color;
+
+void main()
+{
+    gl_FragColor = color;
+}
+Total Frames: 1161
+Done!
+==20202== Profiling application: ./autorun --benchmark -numdevices=2 -i=1
+==20202== Profiling result:
+Time(%)      Time     Calls       Avg       Min       Max  Name
+ 99.95%  106.632s      1161  91.845ms  91.233ms  96.440ms  calculate_force
+  0.03%  36.949ms      1161  31.824us  30.752us  41.440us  [CUDA memcpy DtoH]
+  0.01%  11.821ms      1161  10.181us  9.0880us  11.296us  update_pos
+  0.00%  106.72us         1  106.72us  106.72us  106.72us  [CUDA memcpy HtoD]
+
+==20202== API calls:
+Time(%)      Time     Calls       Avg       Min       Max  Name
+ 55.93%  59.7078s      2322  25.714ms  6.2010us  96.403ms  cudaLaunch
+ 44.01%  46.9811s         1  46.9811s  46.9811s  46.9811s  cudaThreadSynchronize
+  0.04%  41.391ms         1  41.391ms  41.391ms  41.391ms  cudaHostAlloc
+  0.01%  15.474ms      1162  13.317us  5.5440us  64.087us  cudaMemcpyAsync
+  0.00%  4.0639ms     22059     184ns     115ns  215.28us  cudaSetupArgument
+  0.00%  2.4967ms      2322  1.0750us     226ns  13.303us  cudaConfigureCall
+  0.00%  588.83us        10  58.883us     500ns  581.77us  cudaFree
+  0.00%  177.48us         1  177.48us  177.48us  177.48us  cudaFreeHost
+  0.00%  164.60us        83  1.9830us      91ns  70.938us  cuDeviceGetAttribute
+  0.00%  84.411us         1  84.411us  84.411us  84.411us  cudaMalloc
+  0.00%  29.369us         4  7.3420us  4.7340us  13.241us  cudaStreamCreate
+  0.00%  23.621us         1  23.621us  23.621us  23.621us  cuDeviceTotalMem
+  0.00%  19.063us         1  19.063us  19.063us  19.063us  cuDeviceGetName
+  0.00%  1.0480us         2     524ns     265ns     783ns  cuDeviceGetCount
+  0.00%     336ns         2     168ns     115ns     221ns  cuDeviceGet
