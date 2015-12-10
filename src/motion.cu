@@ -14,10 +14,10 @@
 const float G = 6.674E-11;
 const float epsilon = .25f * .25f;
 
-const int BLOCK_THREADS = 1024;//512;
+const int BLOCK_THREADS = 512;//512;
 #if __CUDA_ARCH__ >= 200
-    const int maxThreadsPerBlock = 1024;
-    const int minBlocks = 2;
+    const int maxThreadsPerBlock = 512;
+    const int minBlocks = 3;
 #else
     const int maxThreadsPerBlock = 512 / 2;
     const int minBlocks = 2;
@@ -32,7 +32,7 @@ void run_calculations(int N, float timestep,
     int blocks = N / BLOCK_THREADS;
     blocks = N % BLOCK_THREADS == 0 ? blocks : blocks + 1;
 
-    calculate_force<<<blocks, BLOCK_THREADS, sizeof(float) * 4, stream1>>>(N,  timestep,
+    calculate_force<<<blocks, BLOCK_THREADS, 0, stream1>>>(N,  timestep,
                 mass, posx, posy, posz, accx, accy, accz);
     #ifdef cudaerr
         gpuErrchk(cudaPeekAtLastError());
@@ -47,7 +47,7 @@ void run_calculations(int N, float timestep,
 }
 
 extern "C" __global__
-//__launch_bounds__(maxThreadsPerBlock, minBlocks)
+__launch_bounds__(maxThreadsPerBlock, minBlocks)
 void calculate_force(int nbodies, float timestep, float* gmass,
                      float* posx, float* posy, float* posz, float* accx, float*
                      accy, float* accz)
@@ -93,7 +93,7 @@ void calculate_force(int nbodies, float timestep, float* gmass,
 }
 
 extern "C" __global__
-//__launch_bounds__(maxThreadsPerBlock, minBlocks)
+__launch_bounds__(maxThreadsPerBlock, minBlocks)
 void update_pos(int nbodies, 
                      float* posx, float* posy, float* posz, float* velx, float*
                      vely, float* velz, float* accx, float* accy, float* accz)

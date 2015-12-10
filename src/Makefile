@@ -2,13 +2,14 @@ CC = nvcc
 
 .SUFFIXES: .cpp .c .h .o .cu
 
-COPTS = -g -std=c++11 #-lprofiler #-O2 #-ftz=true
+COPTS = -g -std=c++11
+#-lprofiler #-O2 #-ftz=true
 
 ifdef DEBUG
 DBG = -Dcudaerr
 endif
 
-INC = -I./libs -I/opt/cuda/include  -I../common/inc/ -I../common/inc/GL
+INC = -I/home/tnallen/lib -I./lib -I/opt/cuda/include  -I../common/inc/ -I../common/inc/GL -I/home/tnallen/include
 
 LIBS = -lstdc++ -lglfw -lGLU -lGL -lGLEW -lm
 
@@ -18,18 +19,18 @@ motion.o \
 utils.o
 
 .cpp.o:
-	 $(CC) -c $(INC) $(DBG) $(COPTS) -o $@ $<
+	 $(CC) -c $(LIBS) $(INC) $(DBG) $(COPTS) -o $@ $<
 
 .cu.o:
-	 $(CC) -c $(INC) $(DBG) $(COPTS) -o $@ $< -dc
+	 $(CC) -c $(LIBS) $(INC) $(DBG) $(COPTS) -o $@ $< -dc
 
 all: autorun
 
-debug: 
+debug: clean
 	$(MAKE) DEBUG=1
 
 autorun: $(OBJS) autorun.o
-	$(CC) -o $@ $(INC) $(DBG) $(COPTS) $(OBJS) autorun.o $(LIBDIR) $(LIBS)
+	$(CC) -o $@ $(INC) $(DBG) $(COPTS) $(OBJS) autorun.o $(LIBS)
 
 clean:
 	-rm -f *.o

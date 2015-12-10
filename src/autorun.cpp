@@ -1,6 +1,7 @@
 #include <GL/glew.h>
 #include <GL/glext.h>
 
+#include <ctime>
 #include <iostream>
 #include <stdlib.h>
 #include <stdio.h>
@@ -35,6 +36,8 @@ void initialize_gl();
 void display(float*, float*, float*);
 void render_setup();
 void dump_bodies();
+
+typedef std::chrono::high_resolution_clock Clock;
 
 const int N = 16384;//1024;//2000;//98304;
 
@@ -99,10 +102,10 @@ int main()//(int argc, char* argv[])
 
     std::cerr << &bodies[0] << " " << &bodies[0].acc << " " << &bodies[0].vel << " " << &bodies[0].pos << std::endl;
     
-    glfw_init();
-    initialize_gl();
-    glewInit();
-    render_setup();
+    //glfw_init();
+    //initialize_gl();
+    //glewInit();
+    //render_setup();
     simulate();
     return 0;
 }
@@ -223,8 +226,9 @@ void simulate()
         gpuErrchk(cudaMemcpyAsync(gaccz, accz, N * sizeof(float), cudaMemcpyHostToDevice, stream1));
 */
 //    #endif
-    double time = 0;
-    while (!glfwWindowShouldClose(window) && (time = glfwGetTime()) < 60)
+    auto time = 0;
+    auto zero = Clock::now();
+    while ((time = std::chrono::duration_cast<std::chrono::seconds>(Clock::now() - zero).count()) < 60.0)
     {
         sim_t = std::thread([stream2, stream3, gmass, gposx, gposy, 
                               gposz, gvelx, gvely, gvelz, gaccx, gaccy, gaccz]() 
@@ -247,7 +251,7 @@ void simulate()
         sim_t.join();
     }
     cudaThreadSynchronize();
-    glfwDestroyWindow(window);
+    //glfwDestroyWindow(window);
     glfwTerminate();
     cudaFree(gmass);
     cudaFree(gposx);
@@ -313,18 +317,19 @@ void render_setup()
 
 void  glfw_init()
 {
+    /*
     if (!glfwInit())
     {
         std::cerr << "Failed to init GLFW" << std::endl;
         exit(1);
     }
     window = glfwCreateWindow(SCREEN_W, SCREEN_H, "n-body test", glfwGetPrimaryMonitor(), NULL);
- //   window = glfwCreateWindow(SCREEN_W, SCREEN_H, "n-body test", NULL, NULL);
+    window = glfwCreateWindow(SCREEN_W, SCREEN_H, "n-body test", NULL, NULL);
     if (!window)
     {
         std::cerr << "Failed to create window." << std::endl;
         glfwTerminate();
-        exit(1);
+    //    exit(1);
     }
     glfwMakeContextCurrent(window);
     int width;
@@ -332,6 +337,7 @@ void  glfw_init()
     glfwGetFramebufferSize(window, &width, &height);
     glViewport(0, 0, width, height);
     glfwSwapInterval(1);
+    */
 }
 
 void initialize_gl()
