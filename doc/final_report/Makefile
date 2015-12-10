@@ -3,3 +3,5 @@ all:
 	bibtex report
 	pdflatex *.tex
 	pdflatex *.tex
+
+
