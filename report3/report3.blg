@@ -1,0 +1,49 @@
+This is BibTeX, Version 0.99d (TeX Live 2015/Arch Linux)
+Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
+The top-level auxiliary file: report3.aux
+The style file: amsrn.bst
+Reallocated singl_function (elt_size=8) to 100 items from 50.
+Reallocated singl_function (elt_size=8) to 100 items from 50.
+Reallocated singl_function (elt_size=8) to 100 items from 50.
+Database file #1: report3.bib
+You've used 1 entry,
+            1497 wiz_defined-function locations,
+            408 strings with 2826 characters,
+and the built_in function-call counts, 1382 in all, are:
+= -- 49
+> -- 151
+< -- 0
++ -- 28
+- -- 137
+* -- 149
+:= -- 312
+add.period$ -- 0
+call.type$ -- 1
+change.case$ -- 16
+chr.to.int$ -- 0
+cite$ -- 1
+duplicate$ -- 65
+empty$ -- 29
+format.name$ -- 24
+if$ -- 116
+int.to.chr$ -- 0
+int.to.str$ -- 0
+missing$ -- 27
+newline$ -- 25
+num.names$ -- 2
+pop$ -- 67
+preamble$ -- 1
+purify$ -- 14
+quote$ -- 0
+skip$ -- 13
+stack$ -- 0
+substring$ -- 11
+swap$ -- 45
+text.length$ -- 16
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 8
+warning$ -- 0
+while$ -- 20
+width$ -- 0
+write$ -- 55

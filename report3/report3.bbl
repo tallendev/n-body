@@ -1,0 +1,26 @@
+% \bib, bibdiv, biblist are defined by the amsrefs package.
+\begin{bibdiv}
+\begin{biblist}
+
+\bib{5214725}{inproceedings}{
+      author={Alam, S.},
+      author={Barrett, R.},
+      author={Bast, M.},
+      author={Fahey, M.R.},
+      author={Kuehn, J.},
+      author={McCurdy, C.},
+      author={Rogers, J.},
+      author={Roth, P.},
+      author={Sankaran, R.},
+      author={Vetter, J.S.},
+      author={Worley, P.},
+      author={Yu, W.},
+       title={Early evaluation of ibm bluegene/p},
+        date={2008Nov},
+   booktitle={High performance computing, networking, storage and analysis,
+  2008. sc 2008. international conference for},
+       pages={1\ndash 12},
+}
+
+\end{biblist}
+\end{bibdiv}

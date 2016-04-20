@@ -1,0 +1,36 @@
+% \bib, bibdiv, biblist are defined by the amsrefs package.
+\begin{bibdiv}
+\begin{biblist}
+
+\bib{5214725}{inproceedings}{
+      author={Alam, S.},
+      author={Barrett, R.},
+      author={Bast, M.},
+      author={Fahey, M.R.},
+      author={Kuehn, J.},
+      author={McCurdy, C.},
+      author={Rogers, J.},
+      author={Roth, P.},
+      author={Sankaran, R.},
+      author={Vetter, J.S.},
+      author={Worley, P.},
+      author={Yu, W.},
+       title={Early evaluation of ibm bluegene/p},
+        date={2008Nov},
+   booktitle={High performance computing, networking, storage and analysis,
+  2008. sc 2008. international conference for},
+       pages={1\ndash 12},
+}
+
+\bib{ibm}{misc}{
+      author={Sosa, C.},
+      author={Knudson, B.},
+       title={Ibm system blue gene solution: Blue gene/p application
+  development},
+        date={2009},
+        note={\url{http://www.redbooks.ibm.com/redbooks/pdfs/sg247287.pdf},
+  Accessed: 9/26/2015},
+}
+
+\end{biblist}
+\end{bibdiv}
